@@ -44,7 +44,7 @@ const SavedAlbums: React.FC<SavedAlbumsProps> = ({ albums }) => {
                   {album.name}
                 </h3>
                 <p className="text-sm text-gray-400 truncate">
-                  {album.artists.map((artist) => artist.name).join(", ")}
+                  {album.artists.map((artist: { name: unknown; }) => artist.name).join(", ")}
                 </p>
               </div>
             </a>
