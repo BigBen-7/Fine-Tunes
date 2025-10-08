@@ -6,8 +6,7 @@
 
 ---
 
-![Fine-Tunes Dashboard Screenshot](https://i.imgur.com/your-screenshot-url.png)
-*(Replace this with a real screenshot of your deployed application)*
+!<img width="1709" height="985" alt="image" src="https://github.com/user-attachments/assets/5d11bc5e-9821-4ff2-bbf3-af4a28f6af9e" />
 
 ## 🎵 About The Project
 
