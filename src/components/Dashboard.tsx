@@ -4,6 +4,7 @@ import Image from "next/image";
 import TopTracks from "./TopTracks";
 import TopArtists from "./TopArtist";
 import SavedAlbums from "./SavedAlbums";
+import AIPlaylistGenerator from "./AIPlaylistGenerator";
 
 interface DashboardProps {
   token: string;
@@ -125,17 +126,22 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
       <main>
         {/* NEW: Render a loading state or the TopTracks component */}
-        {loading ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-400">Loading your music library...</p>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            <TopTracks tracks={topTracks} />
-            <TopArtists artists={topArtists} />
-            <SavedAlbums albums={savedAlbums} />
-          </div>
-        )}
+        <div className="space-y-8">
+          <AIPlaylistGenerator />
+          <hr className="border-gray-700" />
+          {/* Conditional rendering based on loading state */}
+          {loading ? (
+            <div className="p-8 text-center">
+              <p className="text-gray-400">Loading your music library...</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <TopTracks tracks={topTracks} />
+              <TopArtists artists={topArtists} />
+              <SavedAlbums albums={savedAlbums} />
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
