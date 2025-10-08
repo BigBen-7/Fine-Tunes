@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { getTokenFromUrl } from '../lib/spotify';
-import LoginScreen from '../components/LoginScreen';
-import ConfigurationError from '../components/ConfigurationError';
+import { useState, useEffect } from "react";
+import { getTokenFromUrl } from "../lib/spotify";
+import LoginScreen from "../components/LoginScreen";
+import ConfigurationError from "../components/ConfigurationError";
+import Dashboard from "@/components/Dashboard";
 
 /**
  * The main entry point component for the application.
@@ -23,13 +24,13 @@ export default function Home() {
     if (!clientId || !redirectUri) {
       // If keys are missing, set configured to false and stop.
       setIsConfigured(false);
-      return; 
+      return;
     }
     // If keys are present, we can proceed.
     setIsConfigured(true);
 
     // Step 2: Check for user authentication token.
-    const storedToken = window.localStorage.getItem('spotify_access_token');
+    const storedToken = window.localStorage.getItem("spotify_access_token");
     if (storedToken) {
       setToken(storedToken);
       return;
@@ -37,11 +38,19 @@ export default function Home() {
 
     const accessToken = getTokenFromUrl();
     if (accessToken) {
-      window.localStorage.setItem('spotify_access_token', accessToken);
+      window.localStorage.setItem("spotify_access_token", accessToken);
       setToken(accessToken);
-      window.location.hash = ''; 
+      window.location.hash = "";
     }
   }, []);
+
+  const handleLogOut = () => {
+    // clear token from both state abd local storage
+    setToken(null);
+    window.localStorage.removeItem("spotify_access_token");
+    // Optionally, you could redirect to a logged-out page or just re-render.
+    // The component will re-render automatically due to setToken(null).
+  }
 
   // Render logic based on configuration and authentication state.
   return (
@@ -51,10 +60,7 @@ export default function Home() {
         <ConfigurationError />
       ) : token ? (
         // If configured and logged in, show the dashboard (placeholder).
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-          <h1 className="text-3xl font-bold">Authentication Successful!</h1>
-          <p className="text-gray-400 mt-2">Loading your dashboard...</p>
-        </div>
+        <Dashboard token={token} onLogout={handleLogOut} />
       ) : (
         // If configured but not logged in, show the login screen.
         <LoginScreen />
