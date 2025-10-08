@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import { SavedAlbum, TopArtist, Track, UserProfile, Playlist } from "../types";
@@ -46,10 +46,13 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         setTopArtists(data.topArtists);
         setSavedAlbums(data.savedAlbums);
         setPlaylists(data.playlists);
-      } catch (error: any) {
+      } catch (error: unknown) {
+        // Keep type as unknown
         console.error("Error loading dashboard data:", error);
-        if (error.message === 'Spotify token expired') {
-          onLogout();
+        if (error instanceof Error) {
+          if (error.message === "Spotify token expired") {
+            onLogout();
+          }
         }
       } finally {
         setLoading(false);
@@ -63,11 +66,16 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">
-          Welcome to <span className="text-[#1DB954]">FineTune<span className="text-amber-300">s</span></span>
+          Welcome to{" "}
+          <span className="text-[#1DB954]">
+            FineTune<span className="text-amber-300">s</span>
+          </span>
         </h1>
         {userProfile ? (
           <div className="flex items-center space-x-4">
-            <p className="font-medium hidden sm:block">{userProfile.display_name}</p>
+            <p className="font-medium hidden sm:block">
+              {userProfile.display_name}
+            </p>
             {userProfile.images && userProfile.images.length > 0 ? (
               <Image
                 src={userProfile.images[0].url}
@@ -76,7 +84,9 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
                 width={100}
                 height={100}
               />
-            ) : ( <div className="w-14 h-14 bg-gray-700 rounded-full"></div> )}
+            ) : (
+              <div className="w-14 h-14 bg-gray-700 rounded-full"></div>
+            )}
           </div>
         ) : (
           <div className="flex items-center animate-pulse space-x-4">
@@ -88,7 +98,11 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
 
       <main>
         <div className="space-y-8">
-          <AIPlaylistGenerator token={token} userProfile={userProfile} onPlaylistCreated={fetchPlaylists} />
+          <AIPlaylistGenerator
+            token={token}
+            userProfile={userProfile}
+            onPlaylistCreated={fetchPlaylists}
+          />
           <hr className="border-gray-700" />
           {loading ? (
             // THE POLISH: Replace the simple text with our sophisticated skeleton component
