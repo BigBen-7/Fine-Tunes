@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Track, UserProfile } from "../types"; // Import our new type
+import { SavedAlbum, TopArtist, Track, UserProfile } from "../types"; // Import our new type
 import Image from "next/image";
 import TopTracks from "./TopTracks";
+import TopArtists from "./TopArtist";
+import SavedAlbums from "./SavedAlbums";
 
 interface DashboardProps {
   token: string;
@@ -11,14 +13,21 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [topTracks, setTopTracks] = useState<Track[]>([]);
+  const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
+  const [savedAlbums, setSavedAlbums] = useState<SavedAlbum[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true); // Start loading
+      setLoading(true);
       try {
-        // We can fetch both user profile and top tracks at the same time
-        const [profileResponse, tracksResponse] = await Promise.all([
+        // Fetch all four data points in parallel for maximum efficiency.
+        const [
+          profileResponse,
+          tracksResponse,
+          artistsResponse,
+          albumsResponse,
+        ] = await Promise.all([
           fetch("https://api.spotify.com/v1/me", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -28,26 +37,51 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
               headers: { Authorization: `Bearer ${token}` },
             }
           ),
+          fetch(
+            "https://api.spotify.com/v1/me/top/artists?limit=10&time_range=short_term",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
+          // NEW: Fetch saved albums
+          fetch("https://api.spotify.com/v1/me/albums?limit=10", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
-        // Handle potential 401 for either request
-        if (profileResponse.status === 401 || tracksResponse.status === 401) {
+        if (
+          [
+            profileResponse,
+            tracksResponse,
+            artistsResponse,
+            albumsResponse,
+          ].some((res) => res.status === 401)
+        ) {
           onLogout();
           return;
         }
-        if (!profileResponse.ok || !tracksResponse.ok) {
+        if (
+          !profileResponse.ok ||
+          !tracksResponse.ok ||
+          !artistsResponse.ok ||
+          !albumsResponse.ok
+        ) {
           throw new Error("Failed to fetch data from Spotify");
         }
 
         const profileData: UserProfile = await profileResponse.json();
         const tracksData = await tracksResponse.json();
+        const artistsData = await artistsResponse.json();
+        const albumsData = await albumsResponse.json();
 
         setUserProfile(profileData);
         setTopTracks(tracksData.items);
+        setTopArtists(artistsData.items);
+        setSavedAlbums(albumsData.items); // Set the new state
       } catch (error) {
         console.error("Error fetching Spotify data:", error);
       } finally {
-        setLoading(false); // Stop loading regardless of outcome
+        setLoading(false);
       }
     };
 
@@ -96,7 +130,11 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
             <p className="text-gray-400">Loading your music library...</p>
           </div>
         ) : (
-          <TopTracks tracks={topTracks} />
+          <div className="space-y-8">
+            <TopTracks tracks={topTracks} />
+            <TopArtists artists={topArtists} />
+            <SavedAlbums albums={savedAlbums} />
+          </div>
         )}
       </main>
     </div>

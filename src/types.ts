@@ -36,3 +36,24 @@ export interface Track {
     spotify: string;
   };
 }
+
+// Add this new interface to your types.ts file
+
+export interface TopArtist {
+  id: string;
+  name: string;
+  images: {
+    url: string;
+    height: number | null;
+    width: number | null;
+  }[];
+  genres: string[];
+  external_urls: {
+    spotify: string;
+  };
+}
+
+export interface SavedAlbum {
+  added_at: string;
+  album: Album;
+}
