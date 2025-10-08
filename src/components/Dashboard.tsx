@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { UserProfile } from "../types"; // Import our new type
+import { Track, UserProfile } from "../types"; // Import our new type
 import Image from "next/image";
+import TopTracks from "./TopTracks";
 
 interface DashboardProps {
   token: string;
@@ -9,33 +10,48 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [topTracks, setTopTracks] = useState<Track[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchData = async () => {
+      setLoading(true); // Start loading
       try {
-        const response = await fetch("https://api.spotify.com/v1/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // We can fetch both user profile and top tracks at the same time
+        const [profileResponse, tracksResponse] = await Promise.all([
+          fetch("https://api.spotify.com/v1/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(
+            "https://api.spotify.com/v1/me/top/tracks?limit=10&time_range=short_term",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
+        ]);
 
-        if (response.status === 401) {
+        // Handle potential 401 for either request
+        if (profileResponse.status === 401 || tracksResponse.status === 401) {
           onLogout();
           return;
         }
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user profile");
+        if (!profileResponse.ok || !tracksResponse.ok) {
+          throw new Error("Failed to fetch data from Spotify");
         }
 
-        const data: UserProfile = await response.json();
-        setUserProfile(data);
+        const profileData: UserProfile = await profileResponse.json();
+        const tracksData = await tracksResponse.json();
+
+        setUserProfile(profileData);
+        setTopTracks(tracksData.items);
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("Error fetching Spotify data:", error);
+      } finally {
+        setLoading(false); // Stop loading regardless of outcome
       }
     };
 
-    fetchUserProfile();
+    fetchData();
   }, [token, onLogout]);
 
   return (
@@ -74,12 +90,14 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       </header>
 
       <main>
-        <div className="p-8 bg-gray-800 rounded-lg">
-          <h2 className="text-xl font-semibold">Dashboard Content Area</h2>
-          <p className="text-gray-400 mt-2">
-            Our features will be built out here.
-          </p>
-        </div>
+        {/* NEW: Render a loading state or the TopTracks component */}
+        {loading ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-400">Loading your music library...</p>
+          </div>
+        ) : (
+          <TopTracks tracks={topTracks} />
+        )}
       </main>
     </div>
   );
