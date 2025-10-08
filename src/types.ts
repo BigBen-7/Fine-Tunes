@@ -24,6 +24,16 @@ export interface Album {
     height: number | null;
     width: number | null;
   }[];
+  external_urls: {
+    spotify: string;
+  };
+  artists: {
+    id: string;
+    name: string;
+    external_urls: {
+      spotify: string;
+    };
+  }[];
 }
 
 export interface Track {
@@ -37,8 +47,6 @@ export interface Track {
   };
 }
 
-// Add this new interface to your types.ts file
-
 export interface TopArtist {
   id: string;
   name: string;
@@ -51,9 +59,32 @@ export interface TopArtist {
   external_urls: {
     spotify: string;
   };
+  
 }
 
 export interface SavedAlbum {
   added_at: string;
   album: Album;
+}
+
+// Add this new interface to your types.ts file
+
+export interface Playlist {
+  id: string;
+  name: string;
+  description: string;
+  images: {
+    url: string;
+    height: number | null;
+    width: number | null;
+  }[];
+  owner: {
+    display_name: string;
+  };
+  tracks: {
+    total: number;
+  };
+  external_urls: {
+    spotify: string;
+  };
 }
