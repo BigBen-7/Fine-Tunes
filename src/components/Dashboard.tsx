@@ -63,7 +63,7 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-white">
-          Welcome to <span className="text-[#1DB954]">Find-Tunes</span>
+          Welcome to <span className="text-[#1DB954]">FineTune<span className="text-amber-300">s</span></span>
         </h1>
         {userProfile ? (
           <div className="flex items-center space-x-4">

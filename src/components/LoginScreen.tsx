@@ -28,7 +28,7 @@ const LoginScreen: React.FC = () => {
               </svg>
             </div>
             <h1 className="text-6xl md:text-7xl font-bold mb-4 bg-gradient-to-r from-white via-green-100 to-white bg-clip-text text-transparent tracking-tight">
-              Find-Tunes
+              FineTune<span className="text-amber-400">s</span>
             </h1>
             <div className="h-1 w-32 mx-auto bg-gradient-to-r from-transparent via-[#1DB954] to-transparent rounded-full mb-6"></div>
           </div>
