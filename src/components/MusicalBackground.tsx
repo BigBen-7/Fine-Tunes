@@ -1,6 +1,29 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
+interface Circle {
+  x: number;
+  y: number;
+  radius: number;
+  speedX: number;
+  speedY: number;
+  hue: number;
+}
+
+interface Particle {
+  x: number;
+  y: number;
+  size: number;
+  speedY: number;
+  speedX: number;
+  symbol: string;
+  opacity: number;
+  rotation: number;
+  rotationSpeed: number;
+  update: () => void;
+  draw: (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => void;
+}
+
 const MusicalBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -15,67 +38,62 @@ const MusicalBackground: React.FC = () => {
     canvas.height = window.innerHeight;
 
     const particles: Particle[] = [];
-    const symbols = ["🎵", "🎧", "🎸", "🥁", "🎹", "🎤", "🎺",  '🎻', '🎷','🪘','🪇'];
+    const symbols = [
+      "🎵",
+      "🎧",
+      "🎸",
+      "🥁",
+      "🎹",
+      "🎤",
+      "🎺",
+      "🎻",
+      "🎷",
+      "🪘",
+      "🪇",
+    ];
 
-    class Particle {
-      x: number;
-      y: number;
-      size: number;
-      speedY: number;
-      speedX: number;
-      symbol: string;
-      opacity: number;
-      rotation: number;
-      rotationSpeed: number;
+    const createParticle = (): Particle => {
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 30 + 15,
+        speedY: Math.random() * 0.5 + 0.2,
+        speedX: (Math.random() - 0.5) * 0.3,
+        symbol: symbols[Math.floor(Math.random() * symbols.length)],
+        opacity: Math.random() * 0.3 + 0.1,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 2,
+        update() {
+          this.y -= this.speedY;
+          this.x += this.speedX;
+          this.rotation += this.rotationSpeed;
 
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 30 + 15;
-        this.speedY = Math.random() * 0.5 + 0.2;
-        this.speedX = (Math.random() - 0.5) * 0.3;
-        this.symbol = symbols[Math.floor(Math.random() * symbols.length)];
-        this.opacity = Math.random() * 0.3 + 0.1;
-        this.rotation = Math.random() * 360;
-        this.rotationSpeed = (Math.random() - 0.5) * 2;
-      }
-
-      update() {
-        this.y -= this.speedY;
-        this.x += this.speedX;
-        this.rotation += this.rotationSpeed;
-
-        if (this.y < -50) {
-          this.y = canvas.height + 50;
-          this.x = Math.random() * canvas.width;
-        }
-        if (this.x < -50) this.x = canvas.width + 50;
-        if (this.x > canvas.width + 50) this.x = -50;
-      }
-
-      draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate((this.rotation * Math.PI) / 180);
-        ctx.globalAlpha = this.opacity;
-        ctx.font = `${this.size}px Arial`;
-        ctx.fillText(this.symbol, 0, 0);
-        ctx.restore();
-      }
-    }
+          if (this.y < -50) {
+            this.y = canvas.height + 50;
+            this.x = Math.random() * canvas.width;
+          }
+          if (this.x < -50) this.x = canvas.width + 50;
+          if (this.x > canvas.width + 50) this.x = -50;
+        },
+        draw(ctx: CanvasRenderingContext2D) {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate((this.rotation * Math.PI) / 180);
+          ctx.globalAlpha = this.opacity;
+          ctx.font = `${this.size}px Arial`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(this.symbol, 0, 0);
+          ctx.restore();
+        },
+      };
+    };
 
     for (let i = 0; i < 30; i++) {
-      particles.push(new Particle());
+      particles.push(createParticle());
     }
 
-    const circles: {
-      x: number;
-      y: number;
-      radius: number;
-      speedX: number;
-      speedY: number;
-      hue: number;
-    }[] = [];
+    const circles: Circle[] = [];
 
     for (let i = 0; i < 3; i++) {
       circles.push({
@@ -87,6 +105,8 @@ const MusicalBackground: React.FC = () => {
         hue: Math.random() * 60 + 270,
       });
     }
+
+    let animationId: number;
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -117,10 +137,10 @@ const MusicalBackground: React.FC = () => {
 
       particles.forEach((particle) => {
         particle.update();
-        particle.draw();
+        particle.draw(ctx, canvas);
       });
 
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
     animate();
@@ -131,7 +151,11 @@ const MusicalBackground: React.FC = () => {
     };
 
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(animationId);
+    };
   }, []);
 
   return (

@@ -88,3 +88,12 @@ export interface Playlist {
     spotify: string;
   };
 }
+
+export interface Circle {
+  x: number;
+  y: number;
+  radius: number;
+  speedX: number;
+  speedY: number;
+  hue: number;
+}
