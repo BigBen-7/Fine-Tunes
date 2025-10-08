@@ -23,7 +23,7 @@ const TopTracks: React.FC<TopTracksProps> = ({ tracks }) => {
             <a 
               key={track.id}
               href={track.external_urls.spotify}
-            //   target="_blank" // Opens the link in a new tab
+              target="_blank" // Opens the link in a new tab
               rel="noopener noreferrer" // Security best practice for external links
               className="bg-gray-700/50 p-4 rounded-lg hover:bg-gray-600 transition duration-300 group"
             >
