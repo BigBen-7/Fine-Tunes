@@ -104,7 +104,7 @@ const TopTracks: React.FC<TopTracksProps> = ({ tracks }) => {
   }
 
   return (
-    <div className="p-8 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl">
+    <div className="p-8  shadow-2xl">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-white mb-2">Your Top Tracks</h2>
         <p className="text-gray-400">Your most played songs • Hover to preview</p>

@@ -19,7 +19,7 @@ interface AIGeneratedTrack {
 interface AIPlaylistGeneratorProps {
   token: string | null;
   userProfile: UserProfile | null;
-  onPlaylistCreated?: () => Promise<void>; 
+  onPlaylistCreated?: () => void; // Optional callback
 }
 
 /**
@@ -30,6 +30,7 @@ interface AIPlaylistGeneratorProps {
 const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
   token,
   userProfile,
+  onPlaylistCreated, // Destructure the optional prop
 }) => {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
@@ -69,9 +70,9 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
       setGeneratedTracks(tracks);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setSaveStatus(`Error: ${err.message}`);
+        setError(err.message); // Set error state instead of saveStatus
       } else {
-        setSaveStatus("An unexpected error occurred.");
+        setError("An unexpected error occurred.");
       }
     } finally {
       setLoading(false);
@@ -87,7 +88,6 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
     setIsSaving(true);
     setSaveStatus("Step 1/3: Finding songs on Spotify...");
     try {
-      // Step 1: Search for all track URIs in parallel
       const trackUriPromises = generatedTracks.map((track) =>
         searchForTrack(token, track.song, track.artist)
       );
@@ -101,7 +101,6 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
         );
       }
 
-      // Step 2: Create the new playlist
       setSaveStatus(`Step 2/3: Creating playlist "${playlistName}"...`);
       const playlistId = await createPlaylist(
         token,
@@ -112,22 +111,24 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
         throw new Error("Failed to create the playlist on Spotify.");
       }
 
-      // Step 3: Add the found tracks to the new playlist
       setSaveStatus("Step 3/3: Adding songs to your new playlist...");
       const success = await addTracksToPlaylist(
         token,
         playlistId,
         trackUris.slice(0, 100)
-      ); // Limit to 100 tracks per request
+      );
       if (!success) {
         throw new Error("Failed to add tracks to the playlist.");
       }
 
-      setSaveStatus(
-        `Success! Your playlist "${playlistName}" has been saved to your Spotify library.`
-      );
+      setSaveStatus(`Success! Your playlist "${playlistName}" has been saved.`);
       setGeneratedTracks([]);
       setPrompt("");
+
+      // If the callback function exists, call it.
+      if (onPlaylistCreated) {
+        onPlaylistCreated();
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setSaveStatus(`Error: ${err.message}`);
@@ -141,11 +142,12 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
   };
 
   return (
-    <div className="p-8 bg-gray-800 rounded-lg">
-      <h2 className="text-2xl font-bold mb-4 text-white">
+    // THE DESIGN TUNE-UP: Applying the glassmorphism effect
+    <div className="p-8 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-lg shadow-2xl">
+      <h2 className="text-lg sm:text-xl font-bold mb-4">
         AI Playlist Generator ✨
       </h2>
-      <p className="text-gray-400 mb-6">
+      <p className="text-gray-300 mb-4 text-base sm:text-xl">
         Describe the kind of playlist you want, and let AI do the rest. Be
         creative!
       </p>
@@ -155,13 +157,17 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="e.g., A high-energy workout playlist with 90s hip-hop..."
-          className="flex-grow bg-gray-700 text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+          // THE DESIGN TUNE-UP: Glassy textarea
+          className="flex-grow bg-black/20 text-white rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-green-400 transition border border-white/10"
           rows={2}
         />
         <button
           onClick={handleGenerate}
-          disabled={loading}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
+          disabled={loading || generatedTracks.length > 0}
+          className="flex items-center justify-center rounded-md border border-green-500/20 bg-green-500/10 px-6 py-3
+           font-bold text-green-300 backdrop-blur-lg transition-all duration-300
+           hover:enabled:bg-green-500/20 hover:enabled:border-green-500/30
+           disabled:cursor-not-allowed disabled:bg-white/5 disabled:text-gray-400 disabled:border-white/10"
         >
           {loading ? (
             <>
@@ -196,18 +202,24 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
 
       {generatedTracks.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-xl font-bold mb-4">
+          {/* THE FIX: Responsive text size for the title */}
+          <h3 className="text-lg sm:text-xl font-bold mb-4">
             Your AI-Generated Playlist:
           </h3>
-          <ul className="space-y-3 max-h-96 overflow-y-auto pr-2 border-t border-gray-700 pt-4">
+          <ul className="space-y-3 max-h-96 overflow-y-auto pr-2 border-t border-white/10 pt-4">
             {generatedTracks.map((track, index) => (
               <li
                 key={index}
-                className="bg-gray-700/50 p-3 rounded-md flex items-center justify-between"
+                className="bg-black/20 p-3 rounded-md flex items-center justify-between border border-white/10"
               >
                 <div>
-                  <p className="font-semibold text-white">{track.song}</p>
-                  <p className="text-sm text-gray-400">{track.artist}</p>
+                  {/* THE FIX: Responsive text sizes for readability on mobile */}
+                  <p className="font-semibold text-white text-sm sm:text-base">
+                    {track.song}
+                  </p>
+                  <p className="text-xs sm:text-sm text-gray-400">
+                    {track.artist}
+                  </p>
                 </div>
               </li>
             ))}
@@ -217,7 +229,8 @@ const AIPlaylistGenerator: React.FC<AIPlaylistGeneratorProps> = ({
               setSaveStatus(null);
               setIsModalOpen(true);
             }}
-            className="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-md w-full sm:w-auto transition"
+            className="mt-6 w-full sm:w-auto rounded-md border border-white/10 bg-white/5 px-6 py-3 font-bold text-white
+           backdrop-blur-lg transition-all duration-300 hover:bg-white/10 hover:border-white/20"
           >
             Save to Spotify
           </button>

@@ -14,7 +14,7 @@ interface UserPlaylistsProps {
  */
 const UserPlaylists: React.FC<UserPlaylistsProps> = ({ playlists }) => {
   return (
-    <div className="p-8 bg-gray-800 rounded-lg">
+    <div className="p-8  rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-white">Your Playlists</h2>
       
       {!playlists || playlists.length === 0 ? (

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { getTokenFromUrl } from "../lib/spotify";
 import LoginScreen from "../components/LoginScreen";
-import ConfigurationError from "../components/ConfigurationError";
 import Dashboard from "@/components/Dashboard";
 
 /**
@@ -14,20 +13,11 @@ import Dashboard from "@/components/Dashboard";
 export default function Home() {
   const [token, setToken] = useState<string | null>(null);
   // New state to track if environment variables are correctly set.
-  const [isConfigured, setIsConfigured] = useState<boolean>(false);
 
   useEffect(() => {
     // Step 1: Check for application configuration on mount.
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
     const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI;
-
-    if (!clientId || !redirectUri) {
-      // If keys are missing, set configured to false and stop.
-      setIsConfigured(false);
-      return;
-    }
-    // If keys are present, we can proceed.
-    setIsConfigured(true);
 
     // Step 2: Check for user authentication token.
     const storedToken = window.localStorage.getItem("spotify_access_token");
@@ -50,19 +40,14 @@ export default function Home() {
     window.localStorage.removeItem("spotify_access_token");
     // Optionally, you could redirect to a logged-out page or just re-render.
     // The component will re-render automatically due to setToken(null).
-  }
+  };
 
   // Render logic based on configuration and authentication state.
   return (
     <main>
-      {!isConfigured ? (
-        // If the app is not configured, show the error screen.
-        <ConfigurationError />
-      ) : token ? (
-        // If configured and logged in, show the dashboard (placeholder).
+      {token ? (
         <Dashboard token={token} onLogout={handleLogOut} />
       ) : (
-        // If configured but not logged in, show the login screen.
         <LoginScreen />
       )}
     </main>

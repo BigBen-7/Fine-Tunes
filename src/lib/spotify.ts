@@ -8,6 +8,9 @@ const scopes = [
   "user-library-read",
   "playlist-modify-public",
   "playlist-modify-private",
+  "user-read-playback-state",     
+  "user-read-currently-playing",
+   "user-read-recently-played",
 ];
 
 /**

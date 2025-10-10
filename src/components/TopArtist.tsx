@@ -11,7 +11,7 @@ interface TopArtistsProps {
  */
 const TopArtists: React.FC<TopArtistsProps> = ({ artists }) => {
   return (
-    <div className="p-8 bg-gray-800 rounded-lg">
+    <div className="p-8  rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-white">Your Top Artists</h2>
       
       {!artists || artists.length === 0 ? (

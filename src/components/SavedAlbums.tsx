@@ -11,7 +11,7 @@ interface SavedAlbumsProps {
  */
 const SavedAlbums: React.FC<SavedAlbumsProps> = ({ albums }) => {
   return (
-    <div className="p-8 bg-gray-800 rounded-lg">
+    <div className="p-8  rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-white">Your Saved Albums</h2>
 
       {!albums || albums.length === 0 ? (
@@ -26,7 +26,9 @@ const SavedAlbums: React.FC<SavedAlbumsProps> = ({ albums }) => {
               href={album.images[0]?.url ? album.external_urls.spotify : "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gray-700/50 p-4 rounded-lg hover:bg-gray-600 transition duration-300 group"
+              className="bg-white/5 p-4 rounded-lg backdrop-blur-lg border border-white/10
+           hover:bg-white/10 hover:border-white/20 hover:scale-[1.03]
+           transition-all duration-300 group"
             >
               <div
                 className="relative w-full mb-4"
@@ -43,8 +45,10 @@ const SavedAlbums: React.FC<SavedAlbumsProps> = ({ albums }) => {
                 <h3 className="font-semibold text-white truncate group-hover:underline">
                   {album.name}
                 </h3>
-                <p className="text-sm text-gray-400 truncate">
-                  {album.artists.map((artist: { name: unknown; }) => artist.name).join(", ")}
+                <p className="text-sm text-green-300 truncate">
+                  {album.artists
+                    .map((artist: { name: unknown }) => artist.name)
+                    .join(", ")}
                 </p>
               </div>
             </a>

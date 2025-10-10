@@ -97,3 +97,40 @@ export interface Circle {
   speedY: number;
   hue: number;
 }
+
+export interface NowPlaying {
+  is_playing: boolean;
+  item: Track; // It uses the same Track type we already have!
+}
+
+export interface RecentlyPlayedItem {
+  track: Track;
+  played_at: string;
+}
+
+export interface RecentlyPlayed {
+  items: RecentlyPlayedItem[];
+}
+
+export interface Show {
+  id: string;
+  name: string;
+  publisher: string;
+  images: {
+    url: string;
+    height: number | null;
+    width: number | null;
+  }[];
+  external_urls: {
+    spotify: string;
+  };
+}
+
+export interface SavedShow {
+  added_at: string;
+  show: Show;
+}
+
+export interface SavedShows {
+  items: SavedShow[];
+}
