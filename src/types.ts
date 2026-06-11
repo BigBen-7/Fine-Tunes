@@ -89,15 +89,6 @@ export interface Playlist {
   };
 }
 
-export interface Circle {
-  x: number;
-  y: number;
-  radius: number;
-  speedX: number;
-  speedY: number;
-  hue: number;
-}
-
 export interface NowPlaying {
   is_playing: boolean;
   item: Track; // It uses the same Track type we already have!
