@@ -32,7 +32,8 @@ const TopArtists: React.FC<TopArtistsProps> = ({ artists }) => {
                   src={artist.images[0]?.url}
                   alt={artist.name}
                   className="rounded-full object-cover transition duration-300 group-hover:scale-105"
-                  layout="fill"
+                  fill
+                  sizes="(max-width: 640px) 96px, 128px"
                 />
               </div>
               {/* Artist Name */}

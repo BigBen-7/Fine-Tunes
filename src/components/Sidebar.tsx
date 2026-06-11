@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     // THE RESPONSIVE FIX: This component is now a bottom bar on mobile and a sidebar on desktop.
     <div
       className="
-      flex sm:flex-col items-center justify-center gap-8 h-[%] m-auto
+      flex sm:flex-col items-center justify-center gap-8 h-full m-auto
       p-2  sm:p-4 rounded-2xl border border-white/10 bg-black/10 backdrop-blur-xl 
       order-last sm:order-first shrink-0
     "
@@ -100,6 +100,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           setActiveView={setActiveView}
         />
       </nav>
+
+      {/* Logout button — mobile only (bottom bar) */}
+      <button
+        onClick={onLogout}
+        className="sm:hidden cursor-pointer text-red-400 transition-colors p-3 rounded-lg hover:bg-white/5"
+        title="Logout"
+      >
+        <Power size={24} />
+      </button>
 
       {/* Bottom section (or right section on mobile) */}
       <div className="hidden sm:flex flex-col items-center mt-10">

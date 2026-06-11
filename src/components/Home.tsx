@@ -81,7 +81,8 @@ const Home: React.FC<HomeProps> = ({
                   src={track.album.images[0]?.url}
                   alt={track.name}
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  layout="fill"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                 />
               </div>
             ))}
@@ -104,7 +105,8 @@ const Home: React.FC<HomeProps> = ({
                   src={artist.images[0]?.url}
                   alt={artist.name}
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  layout="fill"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                 />
               </div>
             ))}
@@ -127,7 +129,8 @@ const Home: React.FC<HomeProps> = ({
                   src={album.images[0]?.url}
                   alt={album.name}
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  layout="fill"
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
                 />
               </div>
             ))}

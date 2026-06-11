@@ -123,7 +123,6 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       topTracks,
       topArtists,
       savedAlbums,
-      playlists,
       nowPlaying,
       recentlyPlayed,
       savedShows,

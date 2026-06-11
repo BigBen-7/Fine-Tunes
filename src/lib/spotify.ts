@@ -1,6 +1,6 @@
 const authEndpoint = "https://accounts.spotify.com/authorize";
+const tokenEndpoint = "https://accounts.spotify.com/api/token";
 
-// These are the permissions we are asking the user to grant our application.
 const scopes = [
   "user-read-private",
   "user-read-email",
@@ -8,91 +8,145 @@ const scopes = [
   "user-library-read",
   "playlist-modify-public",
   "playlist-modify-private",
-  "user-read-playback-state",     
+  "user-read-playback-state",
   "user-read-currently-playing",
-   "user-read-recently-played",
+  "user-read-recently-played",
 ];
 
-/**
- * Extracts the access token from the URL hash after a successful
- * redirect from the Spotify authentication page.
- * @returns {string | null} The access token, or null if not found.
- */
-export const getTokenFromUrl = (): string | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  
-  const hash = window.location.hash;
-  if (!hash) {
-    return null;
-  }
+// --- PKCE Helpers ---
 
-  const token = hash
-    .substring(1)
-    .split("&")
-    .find((elem) => elem.startsWith("access_token"))
-    ?.split("=")[1];
-
-  return token || null;
+const generateCodeVerifier = (length: number): string => {
+  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+  const values = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(values)
+    .map((x) => possible[x % possible.length])
+    .join("");
 };
 
+const sha256 = async (plain: string): Promise<ArrayBuffer> => {
+  const data = new TextEncoder().encode(plain);
+  return crypto.subtle.digest("SHA-256", data);
+};
 
-/**
- * Constructs the full URL for the Spotify login page, including our
- * client ID, requested scopes, and redirect URI.
- * @returns {string} The fully constructed login URL.
- */
-export const getLoginUrl = (): string => {
+const base64UrlEncode = (input: ArrayBuffer): string =>
+  btoa(String.fromCharCode(...new Uint8Array(input)))
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+// --- Auth URL (PKCE) ---
+
+export const getLoginUrl = async (): Promise<string> => {
   const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
-  const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI;
-
-  if (!clientId || !redirectUri) {
-    // In a real app, you might want more robust error handling.
-    // For our purposes, logging to the console is sufficient.
-    console.error("Spotify Client ID or Redirect URI is not set in .env.local");
-    // Return a non-functional link to prevent runtime errors on the server.
-    return '#'; 
+  if (!clientId) {
+    console.error("Spotify Client ID is not set in .env.local");
+    return "#";
   }
 
-  // URLSearchParams makes it easy to correctly format the query parameters.
+  // Derive redirect URI from the actual browser origin so it always matches
+  // whatever protocol/port the dev server is running on.
+  const redirectUri = window.location.origin + "/";
+  window.sessionStorage.setItem("redirect_uri", redirectUri);
+
+  const codeVerifier = generateCodeVerifier(64);
+  const codeChallenge = base64UrlEncode(await sha256(codeVerifier));
+  window.sessionStorage.setItem("pkce_code_verifier", codeVerifier);
+
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
-    scope: scopes.join(" "), // Scopes must be a space-separated string.
-    response_type: "token",
-    show_dialog: "true", // Forces the user to re-approve permissions every time. Good for development.
+    scope: scopes.join(" "),
+    response_type: "code",
+    code_challenge_method: "S256",
+    code_challenge: codeChallenge,
   });
 
   return `${authEndpoint}?${params.toString()}`;
 };
 
+// --- Token Exchange (code → access + refresh tokens) ---
 
-/**
- * Searches for a track on Spotify.
- * @returns {string | null} The Spotify URI of the first matching track, or null.
- */
-export const searchForTrack = async (token: string, trackName: string, artistName: string): Promise<string | null> => {
-  const query = `track:${trackName} artist:${artistName}`;
-  const response = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`, {
-    headers: { 'Authorization': `Bearer ${token}` },
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+}
+
+export const exchangeCodeForToken = async (code: string): Promise<TokenResponse | null> => {
+  const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+  const redirectUri = window.sessionStorage.getItem("redirect_uri");
+  const codeVerifier = window.sessionStorage.getItem("pkce_code_verifier");
+
+  if (!clientId || !redirectUri || !codeVerifier) return null;
+
+  const response = await fetch(tokenEndpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
+    }),
   });
+
+  if (!response.ok) return null;
+
+  window.sessionStorage.removeItem("pkce_code_verifier");
+  window.sessionStorage.removeItem("redirect_uri");
+  return response.json();
+};
+
+// --- Token Refresh ---
+
+export const refreshAccessToken = async (refreshToken: string): Promise<string | null> => {
+  const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+  if (!clientId) return null;
+
+  const response = await fetch(tokenEndpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+      client_id: clientId,
+    }),
+  });
+
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.access_token;
+};
+
+// --- Spotify API Helpers ---
+
+export const searchForTrack = async (
+  token: string,
+  trackName: string,
+  artistName: string
+): Promise<string | null> => {
+  const query = `track:${trackName} artist:${artistName}`;
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
   if (!response.ok) return null;
   const data = await response.json();
   return data.tracks.items[0]?.uri || null;
 };
 
-/**
- * Creates a new playlist for the current user.
- * @returns {string | null} The ID of the newly created playlist, or null.
- */
-export const createPlaylist = async (token: string, userId: string, playlistName: string): Promise<string | null> => {
+export const createPlaylist = async (
+  token: string,
+  userId: string,
+  playlistName: string
+): Promise<string | null> => {
   const response = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       name: playlistName,
-      description: 'Generated by Find-Tunes AI',
+      description: "Generated by FineTunes AI",
       public: false,
     }),
   });
@@ -101,15 +155,14 @@ export const createPlaylist = async (token: string, userId: string, playlistName
   return data.id;
 };
 
-/**
- * Adds a list of tracks to a specified playlist.
- * @returns {boolean} True if successful, false otherwise.
- */
-export const addTracksToPlaylist = async (token: string, playlistId: string, trackUris: string[]): Promise<boolean> => {
-  // Spotify can only handle 100 tracks per request. We'll send them all for simplicity.
+export const addTracksToPlaylist = async (
+  token: string,
+  playlistId: string,
+  trackUris: string[]
+): Promise<boolean> => {
   const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({ uris: trackUris }),
   });
   return response.ok;

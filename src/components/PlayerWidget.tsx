@@ -26,7 +26,8 @@ const PlayerWidget: React.FC<PlayerWidgetProps> = ({ nowPlaying, recentlyPlayed 
               src={track.album.images[0]?.url}
               alt={track.album.name}
               className="rounded-md object-cover shadow-lg"
-              layout="fill"
+              fill
+              sizes="96px"
             />
           </div>
           <div className="flex-grow overflow-hidden">
@@ -59,7 +60,8 @@ const PlayerWidget: React.FC<PlayerWidgetProps> = ({ nowPlaying, recentlyPlayed 
                   src={track.album.images[0]?.url}
                   alt={track.album.name}
                   className="rounded-md object-cover"
-                  layout="fill"
+                  fill
+                  sizes="48px"
                 />
               </div>
               <div className="flex-grow overflow-hidden">

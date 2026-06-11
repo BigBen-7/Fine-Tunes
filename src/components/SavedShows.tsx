@@ -36,7 +36,8 @@ const SavedShows: React.FC<SavedShowsProps> = ({ savedShows }) => {
                 src={show.images[0]?.url}
                 alt={show.name}
                 className="rounded-md object-cover shadow-lg group-hover:scale-105 transition-transform duration-300"
-                layout="fill"
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
               />
             </div>
             <p className="font-semibold text-white text-sm truncate group-hover:underline">{show.name}</p>

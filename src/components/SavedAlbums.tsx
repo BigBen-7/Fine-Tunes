@@ -30,15 +30,13 @@ const SavedAlbums: React.FC<SavedAlbumsProps> = ({ albums }) => {
            hover:bg-white/10 hover:border-white/20 hover:scale-[1.03]
            transition-all duration-300 group"
             >
-              <div
-                className="relative w-full mb-4"
-                style={{ paddingBottom: "100%" }}
-              >
+              <div className="relative aspect-square w-full mb-4">
                 <Image
                   src={album.images[0]?.url}
                   alt={album.name}
                   className="rounded-md object-cover"
-                  layout="fill"
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
               </div>
               <div>

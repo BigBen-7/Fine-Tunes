@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { getLoginUrl } from "../lib/spotify"; 
+import { getLoginUrl } from "../lib/spotify";
 import MusicalBackground from "./MusicalBackground";
 
 /**
@@ -42,9 +42,12 @@ const LoginScreen: React.FC = () => {
             Spotify account to begin your journey.
           </p>
 
-          {/* Login Button - Changed to an <a> tag for proper redirection */}
-          <a
-            href={getLoginUrl()}
+          {/* Login Button */}
+          <button
+            onClick={async () => {
+              const url = await getLoginUrl();
+              window.location.href = url;
+            }}
             className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#1DB954] to-[#1ED760] hover:from-[#1ED760] hover:to-[#1DB954] text-white font-bold py-4 px-10 rounded-full text-lg transition-all duration-300 shadow-2xl shadow-green-500/40 hover:shadow-green-500/60 hover:scale-105 animate-fade-in-delay-3"
           >
             <svg
@@ -68,7 +71,7 @@ const LoginScreen: React.FC = () => {
                 d="M9 5l7 7-7 7"
               />
             </svg>
-          </a>
+          </button>
 
           {/* Feature badges */}
           <div className="mt-16 flex flex-wrap justify-center gap-4 animate-fade-in-delay-4">
