@@ -69,7 +69,7 @@ const Home: React.FC<HomeProps> = ({
         {topTracks && topTracks.length > 0 && (
           <SnippetCard
             title="Top Tracks"
-            viewName="tracks"
+            viewName="stats"
             setActiveView={setActiveView}
           >
             {topTracks.slice(0, 4).map((track) => (
@@ -93,7 +93,7 @@ const Home: React.FC<HomeProps> = ({
         {topArtists && topArtists.length > 0 && (
           <SnippetCard
             title="Top Artists"
-            viewName="artists"
+            viewName="stats"
             setActiveView={setActiveView}
           >
             {topArtists.slice(0, 4).map((artist) => (

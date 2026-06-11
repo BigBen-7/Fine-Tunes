@@ -11,11 +11,10 @@ import {
   SavedShows as SavedShowsType,
 } from "../types";
 import Image from "next/image";
-import TopTracks from "./TopTracks";
-import TopArtists from "./TopArtist";
 import SavedAlbums from "./SavedAlbums";
 import AIPlaylistGenerator from "./AIPlaylistGenerator";
 import MoodPlaylistGenerator from "./MoodPlaylistGenerator";
+import Stats from "./Stats";
 import {
   getDashboardData,
   getNowPlaying,
@@ -28,8 +27,7 @@ import { Github } from "lucide-react";
 
 export type View =
   | "home"
-  | "tracks"
-  | "artists"
+  | "stats"
   | "albums"
   | "generate"
   | "mood";
@@ -120,10 +118,8 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
     switch (activeView) {
       case "home":
         return <Home {...homeProps} />;
-      case "tracks":
-        return <TopTracks tracks={topTracks} />;
-      case "artists":
-        return <TopArtists artists={topArtists} />;
+      case "stats":
+        return <Stats topTracks={topTracks} topArtists={topArtists} />;
       case "albums":
         return <SavedAlbums albums={savedAlbums} />;
       case "generate":

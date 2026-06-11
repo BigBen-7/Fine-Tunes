@@ -19,6 +19,7 @@ export interface Artist {
 export interface Album {
   id: string;
   name: string;
+  release_date?: string;
   images: {
     url: string;
     height: number | null;
