@@ -6,7 +6,6 @@ import {
   TopArtist,
   Track,
   UserProfile,
-  Playlist,
   NowPlaying,
   RecentlyPlayed,
   SavedShows as SavedShowsType,
@@ -16,10 +15,9 @@ import TopTracks from "./TopTracks";
 import TopArtists from "./TopArtist";
 import SavedAlbums from "./SavedAlbums";
 import AIPlaylistGenerator from "./AIPlaylistGenerator";
-import UserPlaylists from "./UserPlaylists";
+import MoodPlaylistGenerator from "./MoodPlaylistGenerator";
 import {
   getDashboardData,
-  getUserPlaylists,
   getNowPlaying,
 } from "../lib/spotifyService";
 import Sidebar from "./Sidebar";
@@ -31,10 +29,10 @@ import { Github } from "lucide-react";
 export type View =
   | "home"
   | "tracks"
-  | "playlists"
   | "artists"
   | "albums"
-  | "generate";
+  | "generate"
+  | "mood";
 
 interface DashboardProps {
   token: string | null;
@@ -46,7 +44,6 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [topTracks, setTopTracks] = useState<Track[]>([]);
   const [topArtists, setTopArtists] = useState<TopArtist[]>([]);
   const [savedAlbums, setSavedAlbums] = useState<SavedAlbum[]>([]);
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
   const [recentlyPlayed, setRecentlyPlayed] = useState<RecentlyPlayed | null>(
     null
@@ -55,15 +52,7 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeView, setActiveView] = useState<View>("home");
 
-  const fetchPlaylists = useCallback(async () => {
-    if (!token) return;
-    try {
-      const freshPlaylists = await getUserPlaylists(token);
-      setPlaylists(freshPlaylists);
-    } catch (error) {
-      console.error("Error re-fetching playlists:", error);
-    }
-  }, [token]);
+  const fetchPlaylists = useCallback(async () => {}, []);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -75,7 +64,6 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         setTopTracks(data.topTracks);
         setTopArtists(data.topArtists);
         setSavedAlbums(data.savedAlbums);
-        setPlaylists(data.playlists);
         setNowPlaying(data.nowPlaying);
         setRecentlyPlayed(data.recentlyPlayed);
         setSavedShows(data.savedShows);
@@ -134,8 +122,6 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         return <Home {...homeProps} />;
       case "tracks":
         return <TopTracks tracks={topTracks} />;
-      case "playlists":
-        return <UserPlaylists playlists={playlists} />;
       case "artists":
         return <TopArtists artists={topArtists} />;
       case "albums":
@@ -143,6 +129,14 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
       case "generate":
         return (
           <AIPlaylistGenerator
+            token={token}
+            userProfile={userProfile}
+            onPlaylistCreated={fetchPlaylists}
+          />
+        );
+      case "mood":
+        return (
+          <MoodPlaylistGenerator
             token={token}
             userProfile={userProfile}
             onPlaylistCreated={fetchPlaylists}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Home, Music, Mic2, Disc, Wand2, Github, Power, ListVideo} from "lucide-react";
+import { Home, Wand2, Sliders, Github, Power, ListVideo } from "lucide-react";
 import type { Dispatch, SetStateAction, ElementType } from "react";
 import type { View } from "./Dashboard"; // Correctly import the View type
 
@@ -70,32 +70,17 @@ const Sidebar: React.FC<SidebarProps> = ({
           activeView={activeView}
           setActiveView={setActiveView}
         />
-
-        <NavItem
-          icon={Music}
-          label="Playlists"
-          viewName="playlists"
-          activeView={activeView}
-          setActiveView={setActiveView}
-        />
-        <NavItem
-          icon={Mic2}
-          label="Artists"
-          viewName="artists"
-          activeView={activeView}
-          setActiveView={setActiveView}
-        />
-        <NavItem
-          icon={Disc}
-          label="Albums"
-          viewName="albums"
-          activeView={activeView}
-          setActiveView={setActiveView}
-        />
         <NavItem
           icon={Wand2}
-          label="Generate"
+          label="AI Generate"
           viewName="generate"
+          activeView={activeView}
+          setActiveView={setActiveView}
+        />
+        <NavItem
+          icon={Sliders}
+          label="Mood"
+          viewName="mood"
           activeView={activeView}
           setActiveView={setActiveView}
         />

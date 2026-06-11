@@ -136,6 +136,23 @@ export const searchForTrack = async (
   return data.tracks.items[0]?.uri || null;
 };
 
+// Returns the full track object (with album art, preview_url, etc.) instead of just the URI.
+export const searchForTrackFull = async (
+  token: string,
+  trackName: string,
+  artistName: string
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<any | null> => {
+  const query = `track:${trackName} artist:${artistName}`;
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.tracks.items[0] || null;
+};
+
 export const createPlaylist = async (
   token: string,
   userId: string,
